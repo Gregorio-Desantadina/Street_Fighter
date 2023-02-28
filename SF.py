@@ -30,7 +30,8 @@ def draw_healt_bar(healt, x, y):
     pygame.draw.rect(screen, WHITE, (x - 3, y - 3, 406, 36))
     pygame.draw.rect(screen, BLACK, (x, y, 400, 30))
     pygame.draw.rect(screen, RED, (x, y, 400 * ratio, 30))
-def draw_energy_bad(energy, x, y):
+#energybar
+def draw_energy_bar(energy, x, y):
     ratio2 = energy / 100
     pygame.draw.rect(screen, BLUE, (x, y + 40, 400 * ratio2, 30))
 
@@ -49,8 +50,8 @@ while run:
     draw_healt_bar(figther_2.healt, 580, 10)
 
     #show player energy
-    draw_energy_bad(figther_1.energy, 20, 20)
-    draw_energy_bad(figther_2.energy, 580, 20)
+    draw_energy_bar(figther_1.energy, 20, 16)
+    draw_energy_bar(figther_2.energy, 580, 16)
 
     
 
