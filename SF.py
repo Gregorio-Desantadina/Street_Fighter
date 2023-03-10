@@ -61,6 +61,8 @@ while run:
     figther_1.draw(screen)
     figther_2.draw(screen)
     
+
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
