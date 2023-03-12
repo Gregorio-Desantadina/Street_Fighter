@@ -36,8 +36,8 @@ def draw_energy_bar(energy, x, y):
     pygame.draw.rect(screen, BLUE, (x, y + 40, 400 * ratio2, 30))
 
 #create fighters
-figther_1 = Fighter(200, 310)
-figther_2 = Fighter(700, 310)
+figther_1 = Fighter(True, 200, 310)
+figther_2 = Fighter(False, 700, 310)
 
 run = True
 while run:
@@ -56,7 +56,7 @@ while run:
     
 
     figther_1.move(SCREEN_WIDTH, SCREEN_HEIGHT, screen, figther_2)
-   
+    figther_2.move(SCREEN_WIDTH, SCREEN_HEIGHT, screen, figther_1)
 
     figther_1.draw(screen)
     figther_2.draw(screen)
