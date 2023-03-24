@@ -2,7 +2,7 @@ import pygame
 from threading import Event
 import time 
 
-class Fighter():
+class Rock():
     def __init__(self, player, x, y):
         self.player = player
         self.flip = False
@@ -24,15 +24,21 @@ class Fighter():
         self.attack_cooldown6 = 0
         self.attack_cooldown7 = 0
         self.attack_cooldown8 = 0
-        self.dmgmult = 1
+        self.attack_window1_1 = 0
+        self.attack_window1_2 = 0
+        self.shield = 0
+        self.wait_2 = 0
+        self.i_2 = 0
         self.stun_all = 0
         self.xstun = 0
         self.ystun = 0
         self.stunbounce = 0
+        self.dmgmult = 1
+        self.heat = 0
        
 
     def move(self, screen_width, screen_height, surface, target):
-        SPEED = 20
+        SPEED = 18 + (self.heat / 13)
         GRAVITY = 2
         attacking = False
         self.crouch = False
@@ -56,12 +62,27 @@ class Fighter():
            self.attack_cooldown4 -= 1
         if self.attack_cooldown5 > 0:
            self.attack_cooldown5 -= 1
+        if self.attack_cooldown5 == 75:
+            self.shield = 0
         if self.attack_cooldown6 > 0:
            self.attack_cooldown6 -= 1
         if self.attack_cooldown7 > 0:
            self.attack_cooldown7 -= 1
         if self.attack_cooldown8 > 0:
            self.attack_cooldown8 -= 1
+        if self.attack_window1_1 > 0:
+            self.attack_window1_1 -=1
+        if self.attack_window1_2 > 0:
+            self.attack_window1_2 -=1    
+        if self.heat > 0:
+            self.heat -= 0.3
+        
+        if self.shield == 0:
+            self.dmgmult = 1
+        if self.shield == 1:
+            self.dmgmult = 0.75
+        if self.shield == 2:
+            self.dmgmult = 0.5
         
         #Stun all
         if self.stun_all > 0:
@@ -237,89 +258,151 @@ class Fighter():
     def attack(self, surface, target):
         self.attacking = True
         if self.attack_cooldown == 0:
-            if self.attack_type == 1 and self.energy >=10 and self.attack_cooldown1 == 0:
-                attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y, 2 * self.rect.width, self.rect.height)
-                self.energy -= 1
-                self.attack_cooldown = 5
-                self.attack_cooldown1 = 10
-                if attacking_rect.colliderect(target.rect):
-                    target.stun_all = 10
-                    target.xstun = 20
-                    target.ystun = 6
-                    target.healt -= target.dmgmult *  3
-                    target.stunbounce = -(self.flip -0.5) *2
+            if self.attack_type == 1 and self.energy >=2:
+                if self.attack_cooldown1 == 0: 
+                    attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y -20, 2 * self.rect.width, self.rect.height * 1.20)
+                    self.energy -= 2
+                    self.attack_cooldown = 15
+                    self.attack_cooldown1 = 40
+                    if attacking_rect.colliderect(target.rect):
+                        target.stun_all = 20
+                        target.xstun = 5
+                        target.ystun = 6
+                        target.healt -= target.dmgmult * 3
+                        target.stunbounce = -(self.flip -0.5) *2
+                        self.attack_window1_1 = 20
+                        self.attack_cooldown4 = 28
+                    pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
+                elif self.attack_window1_1 != 0 and self.attack_window1_2 == 0 and self.energy >=6:
+                    attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y - 30, 2 * self.rect.width, self.rect.height * 1.30)
+                    self.energy -= 6
+                    self.attack_cooldown = 15
+                    self.attack_cooldown1 = 40
+                    if attacking_rect.colliderect(target.rect):
+                        target.stun_all = 20
+                        target.xstun = 5
+                        target.ystun = -100
+                        target.healt -= target.dmgmult * 5
+                        target.stunbounce = (self.flip -0.5) *2
+                        self.attack_window1_2 = 25
+                        self.attack_cooldown4 = 28
+                    pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
+                elif self.attack_window1_2 != 0 and self.energy >=6:
+                    attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y, 2 * self.rect.width, self.rect.height)
+                    self.energy -= 6
+                    self.attack_window1_2 = 0
+                    if self.flip == True:
+                        self.dx =- 10
+                    elif self.flip == False:
+                        self.dx =+ 10
+                    if attacking_rect.colliderect(target.rect):
+                        self.attack_cooldown = 10
+                        self.attack_cooldown1 = 30
+                        target.healt -= target.dmgmult * 5
+                        target.vel_y  -=10
+                        target.stun_all = 25
+                        target.xstun = 20
+                        target.stunbounce = -(self.flip -0.5) *2
+                        self.attack_cooldown4 = 28
+                    pygame.draw.rect(surface, (255,0,255), attacking_rect)
 
-                pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
+
             if self.attack_type == 2 and self.energy >=25 and self.attack_cooldown2 == 0:
-                attacking_rect = pygame.Rect(self.rect.centerx - (3 * self.rect.width * self.flip), self.rect.y, 3 * self.rect.width, self.rect.height)
-                self.energy -=25
-                self.attack_cooldown = 5
-                self.attack_cooldown2 = 30
-                if attacking_rect.colliderect(target.rect):
-                    target.healt -= target.dmgmult *  7
-                    target.stun_all = 15
-                    target.xstun = 30
-                    target.ystun = 3
-                    target.stunbounce = -(self.flip -0.5) *2
-                pygame.draw.rect(surface, (200, 100, 25), attacking_rect)
+                key = pygame.key.get_pressed()
+                if self.i_2 != 5 and self.energy >= 5:
+                    if self.wait_2 == 0:
+                        attacking_rect = pygame.Rect(self.rect.centerx - 120, self.rect.y, 3 * self.rect.width, self.rect.height)
+                        self.energy -=5
+                        self.attack_cooldown = 7
+                        self.wait_2 = 7
+                        self.i_2 += 1
+                        if attacking_rect.colliderect(target.rect):
+                            target.healt -= target.dmgmult * 2
+                            target.stun_all = 15
+                            target.xstun = 3
+                            target.ystun = 4
+                            target.stunbounce = -(self.flip -0.5) *2
+                        pygame.draw.rect(surface, (200, 200, 25), attacking_rect)
+                    if self.wait_2 > 0:
+                        self.wait_2 -=1
+                    if self.i_2 == 5:
+                        attacking_rect = pygame.Rect(self.rect.centerx - (3 * self.rect.width * self.flip), self.rect.y, 3 * self.rect.width, self.rect.height)
+                        self.energy -=10
+                        self.attack_cooldown = 5
+                        self.attack_cooldown2 = 50
+                        self.i_2 = 0
+                        if attacking_rect.colliderect(target.rect):
+                            target.healt -= target.dmgmult * 7
+                            target.stun_all = 15
+                            target.xstun = 30
+                            target.ystun = 4
+                            target.stunbounce = -(self.flip -0.5) *2
+                        pygame.draw.rect(surface, (255, 200, 25), attacking_rect)         
+                
         
             if self.attack_type == 4 and self.energy >=5 and self.attack_cooldown4 == 0:
-                attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip) - 400 * (self.flip - 0.5) , self.rect.y * 1.125, 2 * self.rect.width, self.rect.height / 2)
-                self.energy -=5
-                self.attack_cooldown4 = 3
-
+                attacking_rect = pygame.Rect(self.rect.centerx -80, self.rect.y + 60, 2 * self.rect.width, self.rect.height * 0.5)
+                self.energy -=3
+                self.attack_cooldown4 = 1
+                if self.heat < 100:
+                    self.heat += 4
+                self.dx = (60 + (self.heat / 3)) * -(self.flip - 0.5)
                 if attacking_rect.colliderect(target.rect):
-                    target.healt -= target.dmgmult * 2
-                    target.attack_cooldown = 5
-                    target.vel_y -= 5.5
-                    target.jump = 0
-                    if target.energy >= 3:
-                        target.energy -=3
+                    target.healt -=5
+                    if self.heat < 90:
+                        self.heat += 10
                     else:
-                        target.energy = 0
+                        self.heat = 100
+                    target.attack_cooldown = 5
+                    target.stun_all = 31
+                    target.xstun = 27
+                    target.stunbounce = (self.flip -0.5) *2
+                    self.attack_cooldown4 = 20
 
                 pygame.draw.rect(surface, (255,255,255), attacking_rect)
             if self.attack_type == 5 and self.energy >=3 and self.attack_cooldown5 == 0:
                 attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip) + 80 * (self.flip - 0.5), self.rect.y, 2 * self.rect.width, self.rect.height)
-                self.energy -= 3
-                if self.flip == True:
-                    self.dx =- 30
-                elif self.flip == False:
-                    self.dx =+ 30
+                self.energy -= 15
+                self.attack_cooldown5 = 200
+                self.attack_cooldown = 10
+                self.shield = 1
                 if attacking_rect.colliderect(target.rect):
-                    self.attack_cooldown5 = 60
-                    self.attack_cooldown = 10
-                    target.healt -= target.dmgmult *  5
-                    target.vel_y  -=30
+                    self.shield = 2
+                    target.healt -= target.dmgmult * 5 + (self.heat / 10)
+                    target.vel_y  -=3
                     target.stun_all = 31
-                    target.xstun = 8
+                    target.xstun = 24
                     target.stunbounce = -(self.flip -0.5) *2
                 pygame.draw.rect(surface, (255,0,255), attacking_rect)
 
-            if self.attack_type == 7 and self.energy >=20 and self.attack_cooldown7 == 0:
-                attacking_rect = pygame.Rect(self.rect.centerx - (1.5 * self.rect.width), self.rect.y / 1.25, 3 * self.rect.width, 2 * self.rect.height)
-                self.energy -= 20
+            if self.attack_type == 7 and self.energy >=7 and self.attack_cooldown7 == 0:
+                attacking_rect = pygame.Rect(self.rect.centerx -80, self.rect.y + 60, 2 * self.rect.width, self.rect.height)
+                self.energy -= 7
                 self.attack_cooldown = 5
-                self.attack_cooldown7 = 35
+                self.attack_cooldown7 = 15
                 if attacking_rect.colliderect(target.rect):
-                    target.healt -= target.dmgmult *  5
+                    self.jump = 1
+                    self.vel_y = -20
+                    target.healt -= target.dmgmult * 3
                     target.stun_all = 11
-                    target.xstun = 30
+                    target.xstun = 10
                     target.stunbounce = -(self.flip -0.5) *2
+                    self.attack_window1_1 = 50
                 pygame.draw.rect(surface, (0,0,255), attacking_rect)
-            if self.attack_type == 8 and self.energy >=15 and self.attack_cooldown8 == 0:
-                attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y / 1.23, 2 * self.rect.width, self.rect.height)
-                self.energy -= 15
-                self.attack_cooldown = 5
-                self.attack_cooldown8 = 45
-                self.vel_y = -25
+
+            if self.attack_type == 8 and self.energy >=2 and self.attack_cooldown8 == 0:
+                attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y, 2 * self.rect.width, self.rect.height)
+                self.energy -= 2
+                self.attack_cooldown = 2
+                self.attack_cooldown8 = 2
+                self.vel_y = 20
                 if attacking_rect.colliderect(target.rect):
-                    target.healt -= target.dmgmult *  4   
-                    target.stun_all = 35
+                    target.healt -= target.dmgmult * 3  
+                    target.stun_all = 10
                     target.xstun = 3
-                    target.vel_y = -40
+                    target.vel_y = 20
                     target.stunbounce = -(self.flip -0.5) *2
-                pygame.draw.rect(surface, (0,0,255), attacking_rect)
+                pygame.draw.rect(surface, (255,210,0), attacking_rect)
         
             if self.attack_type == 3:
                 if self.energy < 100:
@@ -329,8 +412,8 @@ class Fighter():
 
     def draw(self, surface):
         if self.crouch == False:
-            pygame.draw.rect(surface, (255, 0, 0), self.rect)
+            pygame.draw.rect(surface, (150 + + self.heat, 40, self.heat), self.rect)
         elif self.crouch == True:
-            pygame.draw.rect(surface, (0, 255, 0), self.rect)
+            pygame.draw.rect(surface, (150 + self.heat, 80, self.heat), self.rect)
         if self.stun_all > 0:
-            pygame.draw.rect(surface, (50, 255, 120), self.rect)
+            pygame.draw.rect(surface, (150 + self.heat, 13, 7 + self.heat), self.rect)

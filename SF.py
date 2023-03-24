@@ -1,12 +1,15 @@
 import pygame
 from WClass.Warrior import Fighter
+from WClass.Vampire import Vamp
+from WClass.Maid import Maid
+from WClass.Rockstar import Rock
 pygame.init()
 
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Brawler")
+pygame.display.set_caption("Juego 1")
 
 clock = pygame.time.Clock()
 FPS = 30
@@ -35,9 +38,9 @@ def draw_energy_bar(energy, x, y):
     ratio2 = energy / 100
     pygame.draw.rect(screen, BLUE, (x, y + 40, 400 * ratio2, 30))
 
-#create fighters
-figther_1 = Fighter(True, 200, 310)
-figther_2 = Fighter(False, 700, 310)
+#create fighters11
+figther_1 = Fighter(1, 200, 310)
+figther_2 = Fighter(2, 700, 310)
 
 run = True
 while run:
@@ -61,6 +64,7 @@ while run:
     figther_1.draw(screen)
     figther_2.draw(screen)
     
+   
 
     
     for event in pygame.event.get():
