@@ -22,6 +22,7 @@ class Cyber():
         self.__grounded = True
         self.__airbone = False
         self.dx = 0
+        self.dmgmult = 1
         self.projectile = False
         self.projectile2 = False
         self.attacking = False
@@ -29,6 +30,7 @@ class Cyber():
         self.healt = 100
         self.energy = 100
         self.crouch = False
+        self.move_cooldown = 0
         self.attack_cooldown = 0
         self.attack_cooldown1 = 0
         self.attack_cooldown2 = 0
@@ -103,6 +105,8 @@ class Cyber():
         #if self.attacking == False:
         
         #apply attack cooldown
+        if self.move_cooldown > 0:
+            self.move_cooldown -=1
         if self.attack_cooldown > 0:
            self.attack_cooldown -= 1
         if self.attack_cooldown1 > 0:
@@ -173,12 +177,12 @@ class Cyber():
                 GRAVITY = 2
 
             #movement
-            if (key[pygame.K_a] or key[pygame.K_d]) and self.crouch == False:
+            if (key[pygame.K_a] or key[pygame.K_d]) and self.crouch == False and self.move_cooldown == 0:
                 if key[pygame.K_a]:
                     self.dx = -SPEED
                 if key[pygame.K_d]:
                     self.dx = SPEED
-            if (key[pygame.K_a] or key[pygame.K_d]) and self.crouch == True:
+            if (key[pygame.K_a] or key[pygame.K_d]) and self.crouch == True and self.move_cooldown == 0:
                 if key[pygame.K_a]:
                     self.dx = -SPEED/2
                 if key[pygame.K_d]:
@@ -228,12 +232,12 @@ class Cyber():
                 GRAVITY = 2
 
             #movement
-            if (key[pygame.K_LEFT] or key[pygame.K_RIGHT]) and self.crouch == False:
+            if (key[pygame.K_LEFT] or key[pygame.K_RIGHT]) and self.crouch == False and self.move_cooldown == 0:
                 if key[pygame.K_LEFT]:
                     self.dx = -SPEED
                 if key[pygame.K_RIGHT]:
                     self.dx = SPEED
-            if (key[pygame.K_LEFT] or key[pygame.K_RIGHT]) and self.crouch == True:
+            if (key[pygame.K_LEFT] or key[pygame.K_RIGHT]) and self.crouch == True and self.move_cooldown == 0:
                 if key[pygame.K_LEFT]:
                     self.dx = -SPEED/2
                 if key[pygame.K_RIGHT]:
@@ -351,7 +355,7 @@ class Cyber():
                     if attacking_rect.colliderect(target.rect):
                         self.attack_cooldown = 10
                         self.attack_cooldown1 = 50
-                        target.healt -= 5
+                        target.healt -= 4
                         target.vel_y  -=10
                         target.stun_all = 25
                         target.xstun = 30
@@ -359,16 +363,14 @@ class Cyber():
                     pygame.draw.rect(surface, (255,0,255), attacking_rect)
 
 
-            if self.attack_type == 2 and self.energy >=25 and self.attack_cooldown2 == 0:
+            if self.attack_type == 2 and self.energy >=8 and self.attack_cooldown2 == 0:
                 attacking_rect = pygame.Rect(self.rect.centerx - (self.rect.width * self.flip), self.rect.y,self.rect.width, self.rect.height)
                 self.energy -=8
+                self.move_cooldown = 25
                 self.attack_cooldown = 10
                 self.attack_cooldown2 = 30
-                self.vel_y = -25
-                if self.flip == True:
-                    self.dx = -25
-                if self.flip == False:
-                    self.dx =+ 25 
+                self.xstun = 25
+                self.stunbounce = (self.flip -0.5) *2
                 if attacking_rect.colliderect(target.rect):
                     target.healt -= 5
                     target.stun_all = 15

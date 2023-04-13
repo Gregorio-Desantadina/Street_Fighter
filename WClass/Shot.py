@@ -17,7 +17,7 @@ class project():
             self.dx = self.SPEED * self.direct
             self.rect.x += self.dx
             if self.rect.colliderect(self.target.rect):
-                self.target.healt -= 3
+                self.target.healt -= 2
                 self.target.stun_all = 20
                 self.target.xstun = 10
                 self.target.ystun = 6

@@ -22,7 +22,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 
-bg_image = pygame.image.load("textura/background.jpg").convert_alpha()
+bg_image = pygame.image.load("textura/background3.jpg").convert_alpha()
 
 def draw_bg():
     scaled_bg = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
