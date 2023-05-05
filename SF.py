@@ -2,7 +2,8 @@ import pygame
 from WClass.Warrior import Fighter
 from WClass.Rockstar import Rock
 from WClass.Vampire import Vamp
-from WClass.Cyberp import Cyber
+from WClass.Newcyberp import Cyber
+from WClass.Elemental import Element
 
 pygame.init()
 
@@ -10,7 +11,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Juego de Milk-Chan")
+pygame.display.set_caption("NADA")
 
 clock = pygame.time.Clock()
 FPS = 30
@@ -39,9 +40,14 @@ def draw_energy_bar(energy, x, y):
     ratio2 = energy / 100
     pygame.draw.rect(screen, BLUE, (x, y + 40, 400 * ratio2, 30))
 
+
+projectiles = pygame.sprite.Group()
+
 #create fighters11
-figther_1 = Rock(1, 200, 310, SCREEN_WIDTH, SCREEN_HEIGHT, screen)
-figther_2 = Cyber(2, 700, 310, SCREEN_WIDTH, SCREEN_HEIGHT, screen)
+figther_1 = Rock(1, 200, 310, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles)
+figther_2 = Cyber(2, 700, 310, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles)
+
+
 
 run = True
 while run:
@@ -59,10 +65,17 @@ while run:
 
     events = pygame.event.get()
 
-    figther_1.move(SCREEN_WIDTH, SCREEN_HEIGHT, screen, figther_2, events)
-    figther_2.move(SCREEN_WIDTH, SCREEN_HEIGHT, screen, figther_1, events)
+    figther_1.update(SCREEN_WIDTH, SCREEN_HEIGHT, screen, figther_2, events)
+    figther_2.update(SCREEN_WIDTH, SCREEN_HEIGHT, screen, figther_1, events)
     figther_1.draw(screen)
     figther_2.draw(screen)
+    
+    for projectile in projectiles:
+        if projectile.remove_projectile == True:
+            projectiles.remove(projectile)
+
+    projectiles.update(SCREEN_WIDTH, SCREEN_HEIGHT, screen)
+    projectiles.draw(screen)
     
    
 

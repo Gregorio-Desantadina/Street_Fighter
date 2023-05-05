@@ -7,9 +7,8 @@ from WClass.Shot2 import project2
 
 
 
-
 class Cyber():
-    def __init__(self, player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen):
+    def __init__(self, player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles):
         self.screen = screen
         self.screenHeight = SCREEN_HEIGHT
         self.screenWidth = SCREEN_WIDTH
@@ -50,6 +49,7 @@ class Cyber():
         self.stunbounce = 0
         self.shot1 = None
         self.shot2 = None
+        self.projectiles = projectiles
        
 
     def is_grounded(self):
@@ -91,7 +91,7 @@ class Cyber():
     
 
     
-    def move(self, screen_width, screen_height, surface, target, events):
+    def update(self, screen_width, screen_height, surface, target, events):
         SPEED = 20
         GRAVITY = 2
         attacking = False
@@ -141,9 +141,9 @@ class Cyber():
             SPEED = 0
         
 
-        if self.projectile == True:
-            self.shot1.move(self.screenWidth, self.screenHeight, self.screen, target)
-            self.shot1.draw(surface)
+        """if self.projectile == True:
+            self.projectiles.move(self.screenWidth, self.screenHeight, self.screen)
+            self.projectiles.draw(surface)"""
         if self.projectile2 == True:
             self.shot2.move(self.screenWidth, self.screenHeight, self.screen, target)
             self.shot2.draw(surface)
@@ -167,7 +167,7 @@ class Cyber():
             self.vel_y -= self.ystun
             self.ystun -=1
         
-        if self.player == 1 and self.stun_all == 0:
+        if self.player == 1 and self.stun_all == 0 and self.healt > 0:
         #self.crouch
             if key[pygame.K_s]:
                 self.crouch = True
@@ -222,7 +222,7 @@ class Cyber():
                 self.attack(surface, target)
                
 
-        elif self.player == 2 and self.stun_all == 0:
+        elif self.player == 2 and self.stun_all == 0 and self.healt > 0:
             #self.crouch
             if key[pygame.K_DOWN]:
                 self.crouch = True
@@ -313,7 +313,7 @@ class Cyber():
     
     
     
-
+    ##Modificar cada ataque su propio def
     def attack(self, surface, target):
         self.attacking = True
         if self.attack_cooldown == 0:
@@ -324,11 +324,7 @@ class Cyber():
                     self.attack_cooldown = 5
                     self.attack_cooldown1 = 40
                     if attacking_rect.colliderect(target.rect):
-                        target.stun_all = 10
-                        target.xstun = 5
-                        target.ystun = 3
-                        target.healt -= 2
-                        target.stunbounce = -(self.flip -0.5) *2
+                        target.damage_manager (2, 10, 5, 3, False, -(self.flip -0.5) *2)
                         self.attack_window1_1 = 20
                     pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
                 elif self.attack_window1_1 != 0 and self.attack_window1_2 == 0 and self.energy >=3:
@@ -337,11 +333,7 @@ class Cyber():
                     self.attack_cooldown = 5
                     self.attack_cooldown1 = 40
                     if attacking_rect.colliderect(target.rect):
-                        target.stun_all = 10
-                        target.xstun = 5
-                        target.ystun = 3
-                        target.healt -= 2
-                        target.stunbounce = (self.flip -0.5) *2
+                        target.damage_manager (2, 10, 5, 3, False, -(self.flip -0.5) *2)
                         self.attack_window1_2 = 25
                     pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
                 elif self.attack_window1_2 != 0 and self.energy >=6:
@@ -355,11 +347,7 @@ class Cyber():
                     if attacking_rect.colliderect(target.rect):
                         self.attack_cooldown = 10
                         self.attack_cooldown1 = 50
-                        target.healt -= 4
-                        target.vel_y  -=10
-                        target.stun_all = 25
-                        target.xstun = 30
-                        target.stunbounce = -(self.flip -0.5) *2
+                        target.damage_manager (4, 25, 30, 10, False, -(self.flip -0.5) *2)
                     pygame.draw.rect(surface, (255,0,255), attacking_rect)
 
 
@@ -372,11 +360,7 @@ class Cyber():
                 self.xstun = 25
                 self.stunbounce = (self.flip -0.5) *2
                 if attacking_rect.colliderect(target.rect):
-                    target.healt -= 5
-                    target.stun_all = 15
-                    target.xstun = 10
-                    target.ystun = 7
-                    target.stunbounce = -(self.flip -0.5) *2
+                    target.damage_manager (5, 15, 17, 7, False, -(self.flip -0.5) *2)
                 pygame.draw.rect(surface, (200, 100, 25), attacking_rect)
         
             if self.attack_type == 4 and self.energy >=5 and self.attack_cooldown4 == 0:
@@ -387,8 +371,9 @@ class Cyber():
                 self.attack_cooldown4 = 60
 
                 
-            if self.attack_type == 5 and self.energy >=15 and self.projectile == False:
+            if self.attack_type == 5 and self.energy >=15: ##and self.projectile == False
                 self.set_projectile(target)
+                self.projectiles.add(self.shot1)
                 self.energy -= 15
                 self.projectile = True
                 self.attack_cooldown = 10
@@ -401,10 +386,7 @@ class Cyber():
                     self.attack_cooldown = 5
                     self.attack_cooldown7 = 35
                     if attacking_rect.colliderect(target.rect):
-                        target.healt -= 3
-                        target.stun_all = 11
-                        target.xstun = 10
-                        target.stunbounce = -(self.flip -0.5) *2
+                        target.damage_manager (3, 11, 10, 0, False, -(self.flip -0.5) *2)
                         self.attack_window1_1 = 50
                     pygame.draw.rect(surface, (0,0,255), attacking_rect)
             if self.attack_type == 8 and self.energy >=15 and self.attack_cooldown8 == 0:
@@ -414,11 +396,7 @@ class Cyber():
                 self.attack_cooldown8 = 45
                 self.vel_y = 25
                 if attacking_rect.colliderect(target.rect):
-                    target.healt -= 4  
-                    target.stun_all = 15
-                    target.xstun = 3
-                    target.vel_y = +40
-                    target.stunbounce = -(self.flip -0.5) *2
+                    target.damage_manager (4, 15, 3, -40, False, -(self.flip - 0.5) * 2)
                 pygame.draw.rect(surface, (0,0,255), attacking_rect)
         
             if self.attack_type == 3:
@@ -438,6 +416,13 @@ class Cyber():
                     self.attack_cooldown2 = 0
                     self.attack_cooldown5 = 0
                     target.stun_all = 8
+    
+    def damage_manager (self, damage, allstun, xstun, ystun, block, stunbounce):
+        self.healt -=damage
+        self.stun_all = allstun
+        self.xstun = xstun
+        self.vel_y = -ystun
+        self.stunbounce = stunbounce
             
 
     def draw(self, surface):

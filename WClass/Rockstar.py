@@ -1,9 +1,10 @@
 import pygame
 from threading import Event
 import time 
+from WClass.rock_assests.shield import Shield
 
 class Rock():
-    def __init__(self, player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen):
+    def __init__(self, player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles):
         self.player = player
         self.flip = False
         self.rect = pygame.Rect((x, y, 80, 100))
@@ -69,7 +70,7 @@ class Rock():
             return keys
        
 
-    def move(self, screen_width, screen_height, surface, target, events):
+    def update(self, screen_width, screen_height, surface, target, events):
         SPEED = 18 + (self.heat / 13)
         GRAVITY = 2
         attacking = False
@@ -94,7 +95,7 @@ class Rock():
            self.attack_cooldown4 -= 1
         if self.attack_cooldown5 > 0:
            self.attack_cooldown5 -= 1
-        if self.attack_cooldown5 == 75:
+        if self.attack_cooldown5 == 35:
             self.shield = 0
         if self.attack_cooldown6 > 0:
            self.attack_cooldown6 -= 1
@@ -114,9 +115,14 @@ class Rock():
         if self.shield == 0:
             self.dmgmult = 1
         if self.shield == 1:
-            self.dmgmult = 0.75
+            self.dmgmult = 1.2        
         if self.shield == 2:
-            self.dmgmult = 0.5
+            self.dmgmult = 1.5
+
+        self.shieldfire = Shield(self.rect.x - 30, self.rect.y - 20, target, self, self.shield)     
+        if self.shield > 0:
+            self.shieldfire.move()
+            self.shieldfire.draw(surface)   
 
         
         
@@ -294,11 +300,7 @@ class Rock():
                     self.attack_cooldown = 15
                     self.attack_cooldown1 = 40
                     if attacking_rect.colliderect(target.rect):
-                        target.stun_all = 20
-                        target.xstun = 5
-                        target.ystun = 6
-                        target.healt -= target.dmgmult * 3
-                        target.stunbounce = -(self.flip -0.5) *2
+                        target.damage_manager(3 * self.dmgmult, 20, 6, 5, False, -(self.flip -0.5) *2)
                         self.attack_window1_1 = 20
                         self.attack_cooldown4 = 28
                     pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
@@ -308,11 +310,7 @@ class Rock():
                     self.attack_cooldown = 15
                     self.attack_cooldown1 = 40
                     if attacking_rect.colliderect(target.rect):
-                        target.stun_all = 20
-                        target.xstun = 5
-                        target.ystun = -100
-                        target.healt -= target.dmgmult * 5
-                        target.stunbounce = (self.flip -0.5) *2
+                        target.damage_manager(5 * self.dmgmult, 20, 5, -100, False, (self.flip -0.5) *2)
                         self.attack_window1_2 = 25
                         self.attack_cooldown4 = 28
                     pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
@@ -327,11 +325,7 @@ class Rock():
                     if attacking_rect.colliderect(target.rect):
                         self.attack_cooldown = 10
                         self.attack_cooldown1 = 30
-                        target.healt -= target.dmgmult * 5
-                        target.vel_y  -=10
-                        target.stun_all = 25
-                        target.xstun = 20
-                        target.stunbounce = -(self.flip -0.5) *2
+                        target.damage_manager(5 * self.dmgmult, 25, 20, 10, False, -(self.flip -0.5) *2)
                         self.attack_cooldown4 = 28
                     pygame.draw.rect(surface, (255,0,255), attacking_rect)
 
@@ -350,33 +344,25 @@ class Rock():
                     self.__airbone = True
                     self.__jumps = 1
                     if attacking_rect.colliderect(target.rect):
-                        target.healt -= target.dmgmult * 5 + (self.heat / 3)
-                        target.vel_y  -=30
-                        target.stun_all = 31
-                        target.xstun -= 10
-                        target.stunbounce = -(self.flip -0.5) *2
+                        target.damage_manager(target.dmgmult * 5 + (self.heat / 3), 31, 10, 30, False, -(self.flip -0.5) *2)
                     pygame.draw.rect(surface, (255,0,255), attacking_rect)
 
                 
         
             if self.attack_type == 4 and self.energy >=5 and self.attack_cooldown4 == 0:
                 attacking_rect = pygame.Rect(self.rect.centerx -80, self.rect.y + 60, 2 * self.rect.width, self.rect.height * 0.5)
-                self.energy -=3
+                self.energy -=2
                 self.attack_cooldown4 = 1
                 if self.heat < 100:
-                    self.heat += 4
+                    self.heat += 5
                 self.dx = (60 + (self.heat / 3)) * -(self.flip - 0.5)
                 if attacking_rect.colliderect(target.rect):
-                    target.healt -=5
-                    if self.heat < 90:
-                        self.heat += 10
+                    target.damage_manager(5 * self.dmgmult, 31, 27, 0, False, (self.flip -0.5) *2)
+                    if self.heat < 80:
+                        self.heat += 20
                     else:
                         self.heat = 100
-                    target.attack_cooldown = 5
-                    target.stun_all = 31
-                    target.xstun = 27
-                    target.stunbounce = (self.flip -0.5) *2
-                    self.attack_cooldown4 = 20
+                    self.attack_cooldown4 = 34
 
                 pygame.draw.rect(surface, (255,255,255), attacking_rect)
             if self.attack_type == 5 and self.energy >=3 and self.attack_cooldown5 == 0:
@@ -387,11 +373,7 @@ class Rock():
                 self.shield = 1
                 if attacking_rect.colliderect(target.rect):
                     self.shield = 2
-                    target.healt -= target.dmgmult * 5 + (self.heat / 10)
-                    target.vel_y  -=3
-                    target.stun_all = 31
-                    target.xstun = 24
-                    target.stunbounce = -(self.flip -0.5) *2
+                    target.damage_manager(target.dmgmult * 5 + (self.heat / 10), 31, 24, 3, False, -(self.flip -0.5) *2)
                 pygame.draw.rect(surface, (255,0,255), attacking_rect)
 
             if self.attack_type == 7 and self.energy >=7 and self.attack_cooldown7 == 0:
@@ -402,10 +384,7 @@ class Rock():
                 if attacking_rect.colliderect(target.rect):
                     self.__jumps = 1
                     self.vel_y = -20
-                    target.healt -= target.dmgmult * 3
-                    target.stun_all = 11
-                    target.xstun = 10
-                    target.stunbounce = -(self.flip -0.5) *2
+                    target.damage_manager(3 * self.dmgmult, 11, 10, 0, False, -(self.flip -0.5) *2)
                     self.attack_window1_1 = 50
                 pygame.draw.rect(surface, (0,0,255), attacking_rect)
 
@@ -416,21 +395,34 @@ class Rock():
                 self.attack_cooldown8 = 2
                 self.vel_y = 20
                 if attacking_rect.colliderect(target.rect):
-                    target.healt -= target.dmgmult * 3  
-                    target.stun_all = 10
-                    target.xstun = 3
-                    target.vel_y = 20
-                    target.stunbounce = -(self.flip -0.5) *2
+                    target.damage_manager(3 * self.dmgmult, 10, 3, -20, False, -(self.flip -0.5) *2)
                 pygame.draw.rect(surface, (255,210,0), attacking_rect)
         
             if self.attack_type == 3:
                 if self.energy < 100:
                     self.energy += 1 + self.heat / 75
                     self.vel_y = 1
+
+    def damage_manager (self, damage, allstun, xstun, ystun, block, stunbounce):
+        self.healt -=damage * self.dmgmult
+        if self.attack_window2 == 0:
+            if self.shield == 2 and block == False:
+                self.stun_all = allstun * 0.6
+                self.xstun = xstun * 0.8
+                self.vel_y = -ystun * 0.8
+            elif self.shield == 1:
+                self.stun_all = allstun * 0.8
+                self.xstun = xstun * 0.9
+                self.vel_y = -ystun * 0.9
+            if self.shield == 0:
+                self.stun_all = allstun 
+                self.xstun = xstun 
+                self.vel_y = -ystun 
+            self.stunbounce = stunbounce
             
 
     def draw(self, surface):
-        if self.player == 1:
+        if self.healt >= 0:
             if self.crouch == False:
                 pygame.draw.rect(surface, (150 + + self.heat, 40, self.heat), self.rect)
             elif self.crouch == True:
