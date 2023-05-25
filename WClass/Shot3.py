@@ -27,9 +27,11 @@ class project3(pygame.sprite.Sprite):
         if self.rect.bottom + self.dy < screen_height - 110:
             self.dx = self.SPEED * self.direct
             self.rect.x += self.dx
-            self.SPEED -=2
-            self.vel_y += self.GRAVITY
-            self.dy += self.vel_y
+            if self.SPEED > 0:
+                self.SPEED -=2.5
+            if self.vel_y <= 7:
+                self.vel_y += self.GRAVITY
+                self.dy += self.vel_y
             if self.rect.left + self.dx < -20:
                 self.vel_y -= 10
                 self.direct = -self.direct

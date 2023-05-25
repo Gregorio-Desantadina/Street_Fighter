@@ -4,6 +4,7 @@ from WClass.Rockstar import Rock
 from WClass.Vampire import Vamp
 from WClass.Newcyberp import Cyber
 from WClass.Elemental import Element
+from WClass.Bot import Bot
 
 pygame.init()
 
@@ -22,6 +23,7 @@ GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
+YELLOW = (200,200,100)
 
 bg_image = pygame.image.load("textura/background3.jpg").convert_alpha()
 
@@ -40,12 +42,33 @@ def draw_energy_bar(energy, x, y):
     ratio2 = energy / 100
     pygame.draw.rect(screen, BLUE, (x, y + 40, 400 * ratio2, 30))
 
+def draw_ground(x, y):
+    pygame.draw.rect(screen, YELLOW, (x, y, 1000, 110))
+
 
 projectiles = pygame.sprite.Group()
+teclas_player1 = {
+    'up':  'w',
+    'down': pygame.K_s, 
+    'left': pygame.K_a,
+    'right': pygame.K_d,
+    'attack1': pygame.K_r,
+    'attack2': pygame.K_t, 
+    'attack3': pygame.K_y,             
+}
+teclas_player2 = {
+    'up':  'up',
+    'down': pygame.K_DOWN, 
+    'left': pygame.K_LEFT,
+    'right': pygame.K_RIGHT,
+    'attack1': pygame.K_KP1,
+    'attack2': pygame.K_KP2, 
+    'attack3': pygame.K_KP3,             
+}
 
 #create fighters11
-figther_1 = Rock(1, 200, 310, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles)
-figther_2 = Cyber(2, 700, 310, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles)
+figther_1 = Cyber(1, 200, 310, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles, teclas_player1)
+figther_2 = Bot(2, 700, 310, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles, teclas_player2)
 
 
 
@@ -77,6 +100,8 @@ while run:
     projectiles.update(SCREEN_WIDTH, SCREEN_HEIGHT, screen)
     projectiles.draw(screen)
     
+    draw_ground(0, 490)
+    
    
 
     
@@ -85,4 +110,4 @@ while run:
             run = False
     pygame.display.update()
 
-pygame.quit()
+pygame.quit() ##

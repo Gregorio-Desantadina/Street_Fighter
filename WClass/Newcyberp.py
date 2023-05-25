@@ -6,7 +6,7 @@ from WClass.Shot3 import project3
 from WClass.BaseCharacter import Character
 
 class Cyber (Character):
-    def __init__(self, player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles):
+    def __init__(self, player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles, movement_keys):
         self.projectile = False
         self.projectile2 = False
         self.attack_window1_1 = 0
@@ -17,7 +17,15 @@ class Cyber (Character):
         self.shot2 = None
         self.shot3 = None
         self.projectiles = projectiles
-        super().__init__(player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles)
+        super().__init__(player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles, movement_keys)
+
+
+    def apply_attack_cooldown(self):
+        super().apply_attack_cooldown()
+        if self.attack_window1_1 > 0:
+           self.attack_window1_1 -= 1
+        if self.attack_window1_2 > 0:
+           self.attack_window1_2 -= 1
         
 
     def set_projectile(self, target):
@@ -34,26 +42,32 @@ class Cyber (Character):
 
     def attack1(self, surface, target):
         if self.attack_cooldown == 0:
-            if self.attack_type == 1 and self.energy >=2:
-                if self.attack_cooldown1 == 0: 
+            if self.energy >=2:
+                if self.attack_cooldown1 == 0 and self.attack_window1_1 == 0 and self.attack_window1_2 == 0: 
                     attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y + 40, 2 * self.rect.width, self.rect.height * 0.60)
                     self.energy -= 2
                     self.attack_cooldown = 5
-                    self.attack_cooldown1 = 40
+                    self.attack_cooldown1 = 5
                     if attacking_rect.colliderect(target.rect):
                         target.damage_manager (2, 10, 5, 3, False, -(self.flip -0.5) *2)
                         self.attack_window1_1 = 20
+                    else:
+                        self.attack_cooldown1 = 40
                     pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
-                elif self.attack_window1_1 != 0 and self.attack_window1_2 == 0 and self.energy >=3:
+                    self.attack_type = 0
+                elif self.attack_window1_1 != 0 and self.attack_window1_2 == 0 and self.energy >=3 and self.attack_type == 1:
                     attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip), self.rect.y + 40, 2 * self.rect.width, self.rect.height * 0.60)
                     self.energy -= 3
                     self.attack_cooldown = 5
-                    self.attack_cooldown1 = 40
+                    self.attack_cooldown1 = 5
                     if attacking_rect.colliderect(target.rect):
                         target.damage_manager (2, 10, 5, 3, False, -(self.flip -0.5) *2)
                         self.attack_window1_2 = 25
+                    else:
+                        self.attack_cooldown1 = 40
                     pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
-                elif self.attack_window1_2 != 0 and self.energy >=6:
+                    self.attack_type = 0
+                elif self.attack_window1_2 != 0 and self.energy >=6  and self.attack_type == 1:
                     attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip) + 80 * (self.flip - 0.5), self.rect.y, 2 * self.rect.width, self.rect.height)
                     self.energy -= 6
                     self.attack_window1_2 = 0
@@ -66,6 +80,7 @@ class Cyber (Character):
                         self.attack_cooldown1 = 50
                         target.damage_manager (4, 25, 30, 10, False, -(self.flip -0.5) *2)
                     pygame.draw.rect(surface, (255,0,255), attacking_rect)
+        self.attack_type = 0
 
     def attack2(self, surface, target):
         if self.attack_cooldown == 0:
@@ -80,6 +95,7 @@ class Cyber (Character):
                 if attacking_rect.colliderect(target.rect):
                     target.damage_manager (5, 15, 17, 7, False, -(self.flip -0.5) *2)
                 pygame.draw.rect(surface, (200, 100, 25), attacking_rect)
+        self.attack_type = 0
         
     def attack4(self, surface, target):
         if self.attack_cooldown == 0:
@@ -90,6 +106,7 @@ class Cyber (Character):
                 self.projectile2 = True
                 self.attack_cooldown = 3
                 self.attack_cooldown4 = 60
+        self.attack_type = 0
 
     def attack5(self, surface, target):
         if self.attack_cooldown == 0:
@@ -99,6 +116,7 @@ class Cyber (Character):
                 self.energy -= 15
                 self.projectile = True
                 self.attack_cooldown = 10
+        self.attack_type = 0
             
     def attack7(self, surface, target):
         if self.attack_cooldown == 0:
@@ -107,6 +125,7 @@ class Cyber (Character):
                 self.projectiles.add(self.shot3)
                 self.energy -= 15
                 self.attack_cooldown7 = 20
+        self.attack_type = 0
 
     def attack8(self, surface, target):
         if self.attack_cooldown == 0:
@@ -119,6 +138,7 @@ class Cyber (Character):
                 if attacking_rect.colliderect(target.rect):
                     target.damage_manager (4, 15, 3, -40, False, -(self.flip - 0.5) * 2)
                 pygame.draw.rect(surface, (0,0,255), attacking_rect)
+        self.attack_type = 0
         
     def attack3(self, surface, target):
         if self.attack_cooldown == 0:
@@ -126,19 +146,24 @@ class Cyber (Character):
                 if self.energy < 100:
                     self.energy += 2
                     self.vel_y = 1
-            if self.attack_type == 6 and self.attack_cooldown6 == 0:
-                if self.energy >= 20:
-                    if self.flip == True:
-                        self.rect.x = target.rect.x - 100
-                    else:
-                        self.rect.x = target.rect.x + 100
-                    self.energy -=20
-                    self.attack_cooldown6 = 10
-                    self.attack_cooldown = 0
-                    self.attack_cooldown1 = 0
-                    self.attack_cooldown2 = 0
-                    self.attack_cooldown5 = 0
-                    target.stun_all = 8
+                    self.attack_type = 0
+                else:
+                    self.attack_type = 0
+    def attack6(self, surface, target):
+        if self.attack_type == 6 and self.attack_cooldown6 == 0:
+            if self.energy >= 20:
+                if self.flip == True:
+                    self.rect.x = target.rect.x - 100
+                else:
+                    self.rect.x = target.rect.x + 100
+                self.energy -=20
+                self.attack_cooldown6 = 10
+                self.attack_cooldown = 0
+                self.attack_cooldown1 = 0
+                self.attack_cooldown2 = 0
+                self.attack_cooldown5 = 0
+                target.stun_all = 8
+        self.attack_type = 0
 
 
     def draw(self, surface):

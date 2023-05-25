@@ -4,7 +4,8 @@ import time
 
 
 class Character():
-    def __init__(self, player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles):
+    def __init__(self, player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles, movement_keys):
+        self.last_time = pygame.time.get_ticks()
         self.SPEED = 20
         self.player = player
         self.flip = False
@@ -30,12 +31,34 @@ class Character():
         self.attack_cooldown6 = 0
         self.attack_cooldown7 = 0
         self.attack_cooldown8 = 0
+        self.attack_cooldown9 = 9
         self.stun_all = 0
         self.xstun = 0
         self.ystun = 0
         self.stunbounce = 0
         self.dmgmult = 1
         self.projectiles = projectiles
+        self.attacking1 = False
+        self.attacking2 = False
+        self.attacking3 = False
+        self.attacking4 = False
+        self.attacking5 = False
+        self.attacking6 = False
+        self.attacking7 = False
+        self.attacking8 = False
+        self.attacking9 = False
+        self.attacks = {
+                1: self.attack1,
+                2: self.attack2,
+                3: self.attack3,
+                4: self.attack4,
+                5: self.attack5,
+                6: self.attack6,
+                7: self.attack7,
+                8: self.attack8,
+                9: self.attack9,
+            }
+        self.movement_keys = movement_keys
 
 
     def is_grounded(self):
@@ -51,7 +74,7 @@ class Character():
 
     def jump(self, quantity = 1):
         ##if(self.has_jumps()):
-        if self.__jumps < self.__jumps_limit:
+        if self.__jumps < self.__jumps_limit and self.move_cooldown == 0:
             self.__jumps += quantity
             self.vel_y = -25
             self.__grounded = False
@@ -83,9 +106,9 @@ class Character():
         key = pygame.key.get_pressed()
         dy = 0
         GRAVITY = 2
-        if self.player == 1 and self.stun_all == 0 and self.healt > 0:
+        if self.stun_all == 0 and self.healt > 0:
         #self.crouch
-            if key[pygame.K_s]:
+            if key[self.movement_keys['down']]:
                 self.crouch = True
                 GRAVITY = 3
             else:
@@ -93,118 +116,49 @@ class Character():
                 GRAVITY = 2
 
             #movement
-            if (key[pygame.K_a] or key[pygame.K_d]) and self.crouch == False and self.move_cooldown == 0:
-                if key[pygame.K_a]:
+            if (key[self.movement_keys['left']] or key[self.movement_keys['right']]) and self.crouch == False and self.move_cooldown == 0:
+                if key[self.movement_keys['left']]:
                     self.dx = -self.SPEED
-                if key[pygame.K_d]:
+                if key[self.movement_keys['right']]:
                     self.dx = self.SPEED
-            if (key[pygame.K_a] or key[pygame.K_d]) and self.crouch == True and self.move_cooldown == 0:
-                if key[pygame.K_a]:
+            if (key[self.movement_keys['left']] or key[self.movement_keys['right']]) and self.crouch == True and self.move_cooldown == 0:
+                if key[self.movement_keys['left']]:
                     self.dx = -self.SPEED/2
-                if key[pygame.K_d]:
+                if key[self.movement_keys['right']]:
                     self.dx = self.SPEED/2
         
-            if "w" in self.get_event_keys(events):
+            if self.movement_keys['up'] in self.get_event_keys(events):
                 self.jump()
 
            
             #attack
-            if (key[pygame.K_r] or key[pygame.K_t] or key[pygame.K_y]) and self.crouch==False and self.__grounded == True and self.__airbone == False:
-                if key[pygame.K_r] and self.crouch==False:
+            if (key[self.movement_keys['attack1']] or key[self.movement_keys['attack2']] or key[self.movement_keys['attack3']]) and self.crouch==False and self.__grounded == True and self.__airbone == False and self.attack_type == 0:
+                if key[self.movement_keys['attack1']] and self.crouch==False and self.attack_cooldown1 == 0:
                     self.attack_type = 1
-                    self.attack1(surface, target)
-                if key[pygame.K_t] and self.crouch==False:
+                if key[self.movement_keys['attack2']] and self.crouch==False and self.attack_cooldown2 == 0:
                     self.attack_type = 2
-                    self.attack2(surface, target)
-                if key[pygame.K_y] and self.crouch==False:
+                if key[self.movement_keys['attack3']] and self.crouch==False and self.attack_cooldown3 == 0:
                     self.attack_type = 3
-                    self.attack3(surface, target)
             
             #self.crouch attack
-            if (key[pygame.K_r] or key[pygame.K_t] or key[pygame.K_y]) and self.crouch==True and self.__grounded == True and self.__airbone == False:
-                if key[pygame.K_r] and self.crouch==True:
+            if (key[self.movement_keys['attack1']] or key[self.movement_keys['attack2']] or key[self.movement_keys['attack3']]) and self.crouch==True and self.__grounded == True and self.__airbone == False and self.attack_type == 0:
+                if key[self.movement_keys['attack1']] and self.crouch==True and self.attack_cooldown4 == 0:
                     self.attack_type = 4
-                    self.attack4(surface, target)
-                if key[pygame.K_t] and self.crouch==True:
+                if key[self.movement_keys['attack2']] and self.crouch==True and self.attack_cooldown5 == 0:
                     self.attack_type = 5
-                    self.attack5(surface, target)
-                if key[pygame.K_y] and self.crouch==True:
+                if key[self.movement_keys['attack3']] and self.crouch==True and self.attack_cooldown6 == 0:
                     self.attack_type = 6
-                    self.attack6(surface, target)
                 
         
-            if (key[pygame.K_r] or key[pygame.K_t] or key[pygame.K_y]) and self.__grounded == False and self.__airbone == True:
-                if key[pygame.K_r]:
+            if (key[self.movement_keys['attack1']] or key[self.movement_keys['attack2']] or key[self.movement_keys['attack3']]) and self.__grounded == False and self.__airbone == True and self.attack_type == 0:
+                if key[self.movement_keys['attack1']] and self.attack_cooldown7 == 0:
                     self.attack_type = 7
-                    self.attack7(surface, target)
-                if key[pygame.K_t]:
+                if key[self.movement_keys['attack2']] and self.attack_cooldown8 == 0:
                     self.attack_type = 8
-                    self.attack8(surface, target)
-                if key[pygame.K_y]:
+                if key[self.movement_keys['attack3']] and self.attack_cooldown9 == 0:
                     self.attack_type = 9
-                    self.attack9(surface, target)
                
 
-        elif self.player == 2 and self.stun_all == 0 and self.healt > 0:
-            #self.crouch
-            if key[pygame.K_DOWN]:
-                self.crouch = True
-                GRAVITY = 3
-            else:
-                self.crouch = False
-                GRAVITY = 2
-
-            #movement
-            if (key[pygame.K_LEFT] or key[pygame.K_RIGHT]) and self.crouch == False and self.move_cooldown == 0:
-                if key[pygame.K_LEFT]:
-                    self.dx = -self.SPEED
-                if key[pygame.K_RIGHT]:
-                    self.dx = self.SPEED
-            if (key[pygame.K_LEFT] or key[pygame.K_RIGHT]) and self.crouch == True and self.move_cooldown == 0:
-                if key[pygame.K_LEFT]:
-                    self.dx = -self.SPEED/2
-                if key[pygame.K_RIGHT]:
-                    self.dx = self.SPEED/2
-        
-        
-            #jumping
-            if "up" in self.get_event_keys(events):
-                self.jump()
-            #attack
-            if (key[pygame.K_KP1] or key[pygame.K_KP2] or key[pygame.K_KP3]) and self.crouch==False and self.__grounded == True and self.__airbone == False:
-                if key[pygame.K_KP1] and self.crouch==False:
-                    self.attack_type = 1
-                    self.attack1(surface, target)
-                if key[pygame.K_KP2] and self.crouch==False:
-                    self.attack_type = 2
-                    self.attack2(surface, target)
-                if key[pygame.K_KP3] and self.crouch==False:
-                    self.attack_type = 3
-                    self.attack3(surface, target)
-            
-            #self.crouch attack
-            if (key[pygame.K_KP1] or key[pygame.K_KP2] or key[pygame.K_KP3]) and self.crouch==True and self.__grounded == True and self.__airbone == False:
-                if key[pygame.K_KP1] and self.crouch==True:
-                    self.attack_type = 4
-                    self.attack4(surface, target)
-                if key[pygame.K_KP2] and self.crouch==True:
-                    self.attack_type = 5
-                    self.attack5(surface, target)
-                if key[pygame.K_KP3] and self.crouch==True:
-                    self.attack_type = 6
-                    self.attack6(surface, target)
-               
-        
-            if (key[pygame.K_KP1] or key[pygame.K_KP2] or key[pygame.K_KP3]) and self.__grounded == False and self.__airbone == True:
-                if key[pygame.K_KP1]:
-                    self.attack_type = 7
-                    self.attack7(surface, target)
-                if key[pygame.K_KP2]:
-                    self.attack_type = 8
-                    self.attack8(surface, target)
-                if key[pygame.K_KP3]:
-                    self.attack_type = 9
-                    self.attack9(surface, target)
             
         #Stun all
         if self.stun_all > 0:
@@ -245,9 +199,9 @@ class Character():
             dy = screen_height - 110 - self.rect.bottom
 
         #player face each other
-        if target.rect.centerx > self.rect.centerx:
+        if target.rect.centerx > self.rect.centerx and self.move_cooldown == 0:
             self.flip = False
-        else:
+        elif self.move_cooldown == 0:
             self.flip = True  
 
 
@@ -258,6 +212,7 @@ class Character():
     def update(self, screen_width, screen_height, surface, target, events):
         self.apply_attack_cooldown()
         self.movement(screen_width, screen_height, surface, target, events)
+        self.attack_update(surface, target)
         GRAVITY = 2
         attacking = False
         self.crouch = False
@@ -266,7 +221,9 @@ class Character():
         
 
         #if self.attacking == False:
-        
+    def attack_update(self, surface, target):
+        if self.attack_type in self.attacks:
+            self.attacks[self.attack_type](surface, target)
 
         
         
@@ -277,14 +234,9 @@ class Character():
             keys = []
             for event in events:
                 if event.type == pygame.KEYDOWN:
-
                     keys.append(pygame.key.name(event.key))
             return keys
 
-    def tecla_presionada(self):
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                return pygame.key.name(event.key)
 
     def attack1(self, surface, target):
         if self.attack_cooldown == 0:
@@ -293,6 +245,7 @@ class Character():
                 self.energy -= 1
                 self.attack_cooldown = 5
                 self.attack_cooldown1 = 10
+                self.attack_type = 0
                 if attacking_rect.colliderect(target.rect):
                     target.stun_all = 10
                     target.xstun = 20
@@ -308,6 +261,7 @@ class Character():
                 self.energy -=25
                 self.attack_cooldown = 5
                 self.attack_cooldown2 = 30
+                self.attack_type = 0
                 if attacking_rect.colliderect(target.rect):
                     target.healt -= target.dmgmult *  7
                     target.stun_all = 15
@@ -322,7 +276,7 @@ class Character():
                 attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip) - 400 * (self.flip - 0.5) , self.rect.y * 1.125, 2 * self.rect.width, self.rect.height / 2)
                 self.energy -=5
                 self.attack_cooldown4 = 3
-
+                self.attack_type = 0
                 if attacking_rect.colliderect(target.rect):
                     target.healt -= target.dmgmult * 2
                     target.attack_cooldown = 5
@@ -340,6 +294,7 @@ class Character():
             if self.attack_type == 5 and self.energy >=3 and self.attack_cooldown5 == 0:
                 attacking_rect = pygame.Rect(self.rect.centerx - (2 * self.rect.width * self.flip) + 80 * (self.flip - 0.5), self.rect.y, 2 * self.rect.width, self.rect.height)
                 self.energy -= 3
+                self.attack_type = 0
                 if self.flip == True:
                     self.dx =- 30
                 elif self.flip == False:
@@ -365,6 +320,7 @@ class Character():
                 self.energy -= 20
                 self.attack_cooldown = 5
                 self.attack_cooldown7 = 35
+                self.attack_type = 0
                 if attacking_rect.colliderect(target.rect):
                     target.healt -= target.dmgmult *  5
                     target.stun_all = 11
@@ -380,6 +336,7 @@ class Character():
                 self.attack_cooldown = 5
                 self.attack_cooldown8 = 45
                 self.vel_y = -25
+                self.attack_type = 0
                 if attacking_rect.colliderect(target.rect):
                     target.healt -= target.dmgmult *  4   
                     target.stun_all = 35
@@ -398,6 +355,9 @@ class Character():
                 if self.energy < 100:
                     self.energy += 2
                     self.vel_y = 1
+                    self.attack_type = 0
+                else:
+                    self.attack_type = 0
             
     def damage_manager (self, damage, allstun, xstun, ystun, block, stunbounce):
         self.healt -=damage
