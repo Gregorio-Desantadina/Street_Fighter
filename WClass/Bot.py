@@ -16,6 +16,7 @@ class Bot (Character):
             2: pygame.K_KP2,
         }
         super().__init__(player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles, movement_keys)
+        self.name = "Bot"
 
     def set_stone(self, surface, target, orientation):
         if orientation == 0:
@@ -93,6 +94,8 @@ class Bot (Character):
                     self.attack_cooldown2 = 10
                     self.attack_type = 0
                     self.combo2 = False
+        else:
+            self.attack_type = 0
 
 
     def attack4(self, surface, target):
@@ -130,7 +133,7 @@ class Bot (Character):
     
     def attack5(self, surface, target):
         key = pygame.key.get_pressed()
-        if self.combo5 == False:
+        if self.combo5 == False and self.energy >= 14:
             self.move_cooldown = 15
             self.energy -=8
             self.first = False
@@ -159,6 +162,7 @@ class Bot (Character):
             self.attack_type = 0
             self.combo5 = False
             self.first = False
+    
         
 
     def attack7(self, surface, target):
@@ -170,6 +174,8 @@ class Bot (Character):
             pygame.draw.rect(surface, (0, 255, 0), attacking_rect)
             self.attack_cooldown7 = 20
             self.attack_type = 10
+            self.attack_type = 0
+        else:
             self.attack_type = 0
 
 

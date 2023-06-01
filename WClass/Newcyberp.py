@@ -18,6 +18,7 @@ class Cyber (Character):
         self.shot3 = None
         self.projectiles = projectiles
         super().__init__(player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles, movement_keys)
+        self.name = "Cyber"
 
 
     def apply_attack_cooldown(self):

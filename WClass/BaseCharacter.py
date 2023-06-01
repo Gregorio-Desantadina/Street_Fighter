@@ -5,6 +5,7 @@ import time
 
 class Character():
     def __init__(self, player, x, y, SCREEN_WIDTH, SCREEN_HEIGHT, screen, projectiles, movement_keys):
+        self.name = "Base Character"
         self.last_time = pygame.time.get_ticks()
         self.SPEED = 20
         self.player = player
